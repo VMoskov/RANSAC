@@ -21,4 +21,6 @@ class PointsDataset:
         return self.points[idx]
     
     def to_numpy(self):
-        return np.array([(point.x, point.y) for point in self.points])
+        y = np.array([point.y for point in self.points])
+        X = np.array([[1,  point.x] for point in self.points])
+        return X, y
