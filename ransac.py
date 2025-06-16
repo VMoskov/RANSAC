@@ -5,10 +5,11 @@ from sklearn.preprocessing import PolynomialFeatures
 from criterions.mean_squared_error import MeanSquaredError, SquaredError
 from models.linear_regressor import LinearRegressor
 from dataset.points_dataset import PointsDataset, Point
+import matplotlib.pyplot as plt
 
 
 class RANSAC:
-    def __init__(self, model, criterion, loss, n_iterations=1000, threshold=1.0, sample_size=20):
+    def __init__(self, model, criterion, loss, n_iterations=100000, threshold=1.0, sample_size=20):
         self.model = model
         self.criterion = criterion  # criterion function to evaluate model predictions
         self.loss = loss   # loss function to evaluate model performance
@@ -21,7 +22,7 @@ class RANSAC:
 
 
     def fit(self, data, verbose=False):
-        best_inliers_mask = np.zeros(data.shape[0], dtype=bool)
+        self.best_inliers_mask = np.zeros(data.shape[0], dtype=bool)
         best_loss = float('inf')
 
         X, y = self._transform_data(data)
@@ -33,17 +34,17 @@ class RANSAC:
             model_candidate = self.model.fit(X_sample, y_sample)
             inliers_mask = self._get_inliers_mask(X, y, model_candidate)
 
-            if inliers_mask.sum() > best_inliers_mask.sum():
-                best_inliers_mask = inliers_mask
+            if inliers_mask.sum() > self.best_inliers_mask.sum():
+                self.best_inliers_mask = inliers_mask
                 # we don't calculate loss here, more inliers is always better
 
-        if best_inliers_mask.any():
-            X_final, y_final = X[best_inliers_mask], y[best_inliers_mask]
+        if self.best_inliers_mask.any():
+            X_final, y_final = X[self.best_inliers_mask], y[self.best_inliers_mask]
 
             self.best_model = self.model.fit(X_final, y_final)
-            self.best_inliers = data[best_inliers_mask]
+            self.best_inliers = data[self.best_inliers_mask]
 
-            if verbose: self._diagnostics(X, y, best_inliers_mask)
+            if verbose: self._diagnostics(X, y)
 
         else:  # no consensus set found
             self.best_model = None
@@ -71,29 +72,24 @@ class RANSAC:
         return losses < self.threshold
 
     def _transform_data(self, data):
-        if hasattr(data, 'to_numpy'):
-            numpy_data = data.to_numpy()
-        
-        if isinstance(data, np.ndarray):
-            # assume 2D case (x, y)
-            numpy_data = data
-        
-        if isinstance(data, list):
-            # assume list of tuples (x, y)
-            numpy_data = np.array(data)
+        numpy_data = data.to_numpy() if hasattr(data, 'to_numpy') else np.asarray(data)
 
-        X  = numpy_data[:, :-1]
+        if numpy_data.ndim != 2 or numpy_data.shape[1] != 2:
+            raise ValueError("Data must be convertible to an (N, 2) numpy array.")
+
+        X_raw = numpy_data[:, :-1]
         y = numpy_data[:, -1]
 
         poly = PolynomialFeatures(degree=1, include_bias=True)
-        X_transformed = poly.fit_transform(X)
+        X_transformed = poly.fit_transform(X_raw)
+        
         return X_transformed, y
     
-    def _diagnostics(self, X, y, best_inliers_mask):
-        X_inliers = X[best_inliers_mask]
-        y_inliers = y[best_inliers_mask]
+    def _diagnostics(self, X, y):
+        X_inliers = X[self.best_inliers_mask]
+        y_inliers = y[self.best_inliers_mask]
         
-        outliers_mask = ~best_inliers_mask
+        outliers_mask = ~self.best_inliers_mask
         X_outliers = X[outliers_mask]
         y_outliers = y[outliers_mask]
 
@@ -108,15 +104,44 @@ class RANSAC:
 
         print(f'Inliers Loss: {inliers_loss}, Outliers Loss: {outliers_loss}, Total Loss: {total_loss}')
 
+    def visualize(self, data):
+        if self.best_model is None:
+            raise RuntimeError('Model has not been fitted yet. Call fit() before visualize().')
+        
+        numpy_data = data.to_numpy() if hasattr(data, 'to_numpy') else np.asarray(data)
+        inliers = self.best_inliers.to_numpy() if self.best_inliers is not None else numpy_data[self.best_inliers_mask]
+
+        outliers_mask = ~self.best_inliers_mask
+        outliers = numpy_data[outliers_mask]
+
+        x_min, x_max = numpy_data[:, 0].min(), numpy_data[:, 0].max()
+        line_x = np.linspace(x_min, x_max, 100).reshape(-1, 1)
+
+        poly = PolynomialFeatures(degree=1, include_bias=True)
+        line_x_transformed = poly.fit_transform(line_x)
+        line_y = self.best_model.predict(line_x_transformed)
+
+        plt.figure(figsize=(10, 6))
+        plt.scatter(outliers[:, 0], outliers[:, 1], color='silver', label='Outliers', s=20)
+        plt.scatter(inliers[:, 0], inliers[:, 1], color='green', label='Inliers', s=40)
+        plt.plot(line_x, line_y, color='red', label='Fitted Line')
+
+        plt.title('RANSAC Regression')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.legend()
+        plt.grid(True, linestyle='--', alpha=0.6)
+        plt.show()
+        
 
 if __name__ == '__main__':
     ransac = RANSAC(
         model=LinearRegressor(num_features=1),
         criterion=SquaredError(),
         loss=MeanSquaredError(),
-        n_iterations=1000,
-        threshold=1.0,
-        sample_size=20
+        n_iterations=100000,
+        threshold=0.05,
+        sample_size=10
     )
 
     X = np.array([-0.848,-0.800,-0.704,-0.632,-0.488,-0.472,-0.368,-0.336,-0.280,-0.200,-0.00800,-0.0840,0.0240,0.100,0.124,0.148,0.232,0.236,0.324,0.356,0.368,0.440,0.512,0.548,0.660,0.640,0.712,0.752,0.776,0.880,0.920,0.944,-0.108,-0.168,-0.720,-0.784,-0.224,-0.604,-0.740,-0.0440,0.388,-0.0200,0.752,0.416,-0.0800,-0.348,0.988,0.776,0.680,0.880,-0.816,-0.424,-0.932,0.272,-0.556,-0.568,-0.600,-0.716,-0.796,-0.880,-0.972,-0.916,0.816,0.892,0.956,0.980,0.988,0.992,0.00400]).reshape(-1,1)
@@ -128,3 +153,4 @@ if __name__ == '__main__':
     print('Dataset length:', len(dataset))
 
     ransac.fit(dataset, verbose=True)
+    ransac.visualize(dataset)
