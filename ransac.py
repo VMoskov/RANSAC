@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 class RANSAC:
-    def __init__(self, model, criterion, loss, n_iterations=100000, threshold=1.0, sample_size=20):
+    def __init__(self, model, criterion, loss, n_iterations=100000, threshold=1.0, sample_size=20, datapoints_required=20):
         self.model = model
         self.criterion = criterion  # criterion function to evaluate model predictions
         self.loss = loss   # loss function to evaluate model performance
@@ -17,6 +17,7 @@ class RANSAC:
         self.n_iterations = n_iterations
         self.threshold = threshold
         self.sample_size = sample_size
+        self.datapoints_required = datapoints_required
 
         self.best_model = model
 
@@ -34,7 +35,7 @@ class RANSAC:
             model_candidate = self.model.fit(X_sample, y_sample)
             inliers_mask = self._get_inliers_mask(X, y, model_candidate)
 
-            if inliers_mask.sum() > self.best_inliers_mask.sum():
+            if inliers_mask.sum() > self.best_inliers_mask.sum() and inliers_mask.sum() >= self.datapoints_required:
                 self.best_inliers_mask = inliers_mask
                 # we don't calculate loss here, more inliers is always better
 
@@ -141,7 +142,8 @@ if __name__ == '__main__':
         loss=MeanSquaredError(),
         n_iterations=100000,
         threshold=0.05,
-        sample_size=10
+        sample_size=10,
+        datapoints_required=10
     )
 
     X = np.array([-0.848,-0.800,-0.704,-0.632,-0.488,-0.472,-0.368,-0.336,-0.280,-0.200,-0.00800,-0.0840,0.0240,0.100,0.124,0.148,0.232,0.236,0.324,0.356,0.368,0.440,0.512,0.548,0.660,0.640,0.712,0.752,0.776,0.880,0.920,0.944,-0.108,-0.168,-0.720,-0.784,-0.224,-0.604,-0.740,-0.0440,0.388,-0.0200,0.752,0.416,-0.0800,-0.348,0.988,0.776,0.680,0.880,-0.816,-0.424,-0.932,0.272,-0.556,-0.568,-0.600,-0.716,-0.796,-0.880,-0.972,-0.916,0.816,0.892,0.956,0.980,0.988,0.992,0.00400]).reshape(-1,1)
