@@ -12,3 +12,4 @@ class LinearRegressor:
     def fit(self, X, y):
         # X is augmented
         self.weights = np.linalg.inv(X.T @ X) @ X.T @ y
+        return self
