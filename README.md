@@ -18,7 +18,7 @@ In many real-world scenarios, data is not perfect. It often contains a mixture o
 
 We begin with a dataset where the true linear trend is heavily obscured by "salt-and-pepper" noise—extreme outliers that are far from the main data cloud.
 
-![Initial noisy dataset](visualisations/line/line_generator_visualization.png)
+![Initial noisy dataset](visualisations/line/line_generator_visualization.png?)
 > **Figure 1: The Generated Dataset.** A clear linear trend is hidden within a large number of randomly distributed outliers.
 
 ---
