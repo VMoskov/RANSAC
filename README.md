@@ -38,7 +38,7 @@ RANSAC (Random Sample Consensus) is an iterative method that solves this problem
 
 The final result is a regression line that robustly captures the trend of the inliers.
 
-![RANSAC Result](visualisations/line/ransac_visualization.png)
+![RANSAC Result](visualisations/line/ransac_visualization.png?)
 > **Figure 3: The RANSAC Result.** The algorithm successfully ignores the outliers (silver), identifies the true inliers (green), and fits a line (red) that accurately represents the underlying data.
 
 <!-- ## Quick Start
