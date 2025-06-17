@@ -1,6 +1,7 @@
 from .generator import Generator
-import numpy as np
 from dataset.points_dataset import PointsDataset, Point
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 class LineGenerator(Generator):
@@ -74,3 +75,14 @@ class LineGenerator(Generator):
 
         self.data[salt_indices, 1] = salt_value
         self.data[pepper_indices, 1] = pepper_value
+
+    def visualize(self):
+        if self.data is None:
+            raise RuntimeError('Data has not been generated yet. Call generate() before visualize().')
+        
+        plt.figure(figsize=(10, 6))
+        plt.scatter(self.data[:, 0], self.data[:, 1], label='Data Points', s=20, color='blue')
+        plt.title('Generated Line with Salt-Pepper Noise')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.show()

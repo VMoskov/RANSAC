@@ -154,7 +154,8 @@ if __name__ == '__main__':
         salt_pepper_ratio=0.5
     )
     dataset = generator.generate()
-    
+    generator.visualize()
+
     ransac = RANSAC(
         model=LinearRegressor(num_features=1),
         criterion=SquaredError(),
