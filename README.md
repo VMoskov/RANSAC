@@ -1,4 +1,4 @@
-# Robust Linear Regression using RANSAC
+# RANSAC - Random Sample Consensus
 
 This project provides a from-scratch implementation of the **RANSAC (Random Sample Consensus)** algorithm in Python. It demonstrates how to robustly fit a linear model to 2D data that has been significantly corrupted with outliers, succeeding where traditional methods fail.
 
