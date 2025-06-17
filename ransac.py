@@ -1,11 +1,19 @@
+import os 
+import sys
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+if script_dir not in sys.path:
+    sys.path.insert(0, script_dir)
+
 import random
 import numpy as np
 import warnings
 from sklearn.preprocessing import PolynomialFeatures
+import matplotlib.pyplot as plt
 from criterions.mean_squared_error import MeanSquaredError, SquaredError
 from models.linear_regressor import LinearRegressor
 from dataset.points_dataset import PointsDataset, Point
-import matplotlib.pyplot as plt
+from generators.line_generator import LineGenerator
 
 
 class RANSAC:
@@ -62,7 +70,7 @@ class RANSAC:
         return self.best_model.predict(X)
 
     def _random_sample(self, X, y):
-        if len(data) < self.sample_size:
+        if len(X) < self.sample_size:
             raise ValueError('Not enough data points to sample from.')
         sample_indices = random.sample(range(len(X)), self.sample_size)
         return X[sample_indices], y[sample_indices]
@@ -136,6 +144,17 @@ class RANSAC:
         
 
 if __name__ == '__main__':
+    generator = LineGenerator(
+        num_samples=100,
+        noise_level=0.3,
+        x_range=(-10, 10),
+        slope_range=(-20, 20),
+        intercept_range=(-10, 10),
+        jitter=0.05,
+        salt_pepper_ratio=0.5
+    )
+    dataset = generator.generate()
+    
     ransac = RANSAC(
         model=LinearRegressor(num_features=1),
         criterion=SquaredError(),
@@ -145,14 +164,6 @@ if __name__ == '__main__':
         sample_size=10,
         datapoints_required=10
     )
-
-    X = np.array([-0.848,-0.800,-0.704,-0.632,-0.488,-0.472,-0.368,-0.336,-0.280,-0.200,-0.00800,-0.0840,0.0240,0.100,0.124,0.148,0.232,0.236,0.324,0.356,0.368,0.440,0.512,0.548,0.660,0.640,0.712,0.752,0.776,0.880,0.920,0.944,-0.108,-0.168,-0.720,-0.784,-0.224,-0.604,-0.740,-0.0440,0.388,-0.0200,0.752,0.416,-0.0800,-0.348,0.988,0.776,0.680,0.880,-0.816,-0.424,-0.932,0.272,-0.556,-0.568,-0.600,-0.716,-0.796,-0.880,-0.972,-0.916,0.816,0.892,0.956,0.980,0.988,0.992,0.00400]).reshape(-1,1)
-    y = np.array([-0.917,-0.833,-0.801,-0.665,-0.605,-0.545,-0.509,-0.433,-0.397,-0.281,-0.205,-0.169,-0.0531,-0.0651,0.0349,0.0829,0.0589,0.175,0.179,0.191,0.259,0.287,0.359,0.395,0.483,0.539,0.543,0.603,0.667,0.679,0.751,0.803,-0.265,-0.341,0.111,-0.113,0.547,0.791,0.551,0.347,0.975,0.943,-0.249,-0.769,-0.625,-0.861,-0.749,-0.945,-0.493,0.163,-0.469,0.0669,0.891,0.623,-0.609,-0.677,-0.721,-0.745,-0.885,-0.897,-0.969,-0.949,0.707,0.783,0.859,0.979,0.811,0.891,-0.137]).reshape(-1,1)
-
-    data = np.hstack((X, y))
-    print('Data shape:', data.shape)
-    dataset = PointsDataset([Point(x, y) for x, y in data])
-    print('Dataset length:', len(dataset))
 
     ransac.fit(dataset, verbose=True)
     ransac.visualize(dataset)
