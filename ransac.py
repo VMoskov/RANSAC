@@ -12,7 +12,7 @@ from sklearn.preprocessing import PolynomialFeatures
 import matplotlib.pyplot as plt
 from criterions.mean_squared_error import MeanSquaredError, SquaredError
 from models.linear_regressor import LinearRegressor
-from dataset.points_dataset import PointsDataset, Point
+from dataset.points_dataset import PointsDataset
 from generators.line_generator import LineGenerator
 
 
@@ -31,7 +31,7 @@ class RANSAC:
 
 
     def fit(self, data, verbose=False):
-        self.best_inliers_mask = np.zeros(data.shape[0], dtype=bool)
+        self.best_inliers_mask = np.zeros(len(data), dtype=bool)
         best_loss = float('inf')
 
         X, y = self._transform_data(data)
@@ -118,7 +118,7 @@ class RANSAC:
             raise RuntimeError('Model has not been fitted yet. Call fit() before visualize().')
         
         numpy_data = data.to_numpy() if hasattr(data, 'to_numpy') else np.asarray(data)
-        inliers = self.best_inliers.to_numpy() if self.best_inliers is not None else numpy_data[self.best_inliers_mask]
+        inliers = self.best_inliers if self.best_inliers is not None else numpy_data[self.best_inliers_mask]
 
         outliers_mask = ~self.best_inliers_mask
         outliers = numpy_data[outliers_mask]
@@ -146,10 +146,10 @@ class RANSAC:
 if __name__ == '__main__':
     generator = LineGenerator(
         num_samples=100,
-        noise_level=0.3,
-        x_range=(-10, 10),
-        slope_range=(-20, 20),
-        intercept_range=(-10, 10),
+        noise_level=0.4,
+        x_range=(-1, 1),
+        slope_range=(-2, 2),
+        intercept_range=(-1, 1),
         jitter=0.05,
         salt_pepper_ratio=0.5
     )

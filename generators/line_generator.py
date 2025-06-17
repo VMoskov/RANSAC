@@ -1,5 +1,5 @@
 from .generator import Generator
-from dataset.points_dataset import PointsDataset, Point
+from dataset.points_dataset import PointsDataset
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -53,7 +53,7 @@ class LineGenerator(Generator):
 
         self._apply_salt_pepper_noise()
 
-        return PointsDataset([Point(x, y) for x, y in self.data])
+        return PointsDataset(self.data)
 
     def _apply_salt_pepper_noise(self):
         num_outliers = int(self.num_samples * self.noise_level)
@@ -85,4 +85,5 @@ class LineGenerator(Generator):
         plt.title('Generated Line with Salt-Pepper Noise')
         plt.xlabel('x')
         plt.ylabel('y')
+        plt.grid(True, linestyle='--', alpha=0.6)
         plt.show()
