@@ -18,7 +18,7 @@ In many real-world scenarios, data is not perfect. It often contains a mixture o
 
 We begin with a dataset where the true linear trend is heavily obscured by "salt-and-pepper" noise—extreme outliers that are far from the main data cloud.
 
-![Initial noisy dataset](visualisations/line/line_generator.png)
+![Initial noisy dataset](visualisations/line/line_generator_visualization.png)
 > **Figure 1: The Generated Dataset.** A clear linear trend is hidden within a large number of randomly distributed outliers.
 
 ---
@@ -27,7 +27,7 @@ We begin with a dataset where the true linear trend is heavily obscured by "salt
 
 A traditional method like Least Squares Linear Regression attempts to fit a line to *all* points. The extreme values of the outliers pull the regression line far away from the true trend, resulting in a completely incorrect model.
 
-![Standard Linear Regression on noisy data](visualisations/line/linear_regression_fit.png)
+![Standard Linear Regression on noisy data](visualisations/line/gradient_descent_visualization.png)
 > **Figure 2: The Failure of Standard Regression.** Applying a standard linear regressor to the noisy dataset results in a completely incorrect model that is heavily skewed by the outliers.
 
 ---
